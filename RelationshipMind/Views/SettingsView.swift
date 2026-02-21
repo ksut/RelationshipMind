@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("needsAttentionDays") private var needsAttentionDays: Int = 30
+    @AppStorage("useWhatsApp") private var useWhatsApp: Bool = false
     @State private var apiKey: String = ""
     @State private var showingAPIKey = false
     @State private var saveStatus: SaveStatus?
@@ -111,6 +113,26 @@ struct SettingsView: View {
                         }
                         .font(.caption)
                     }
+                }
+
+                Section("Preferences") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Stepper("Needs Attention: \(needsAttentionDays) days", value: $needsAttentionDays, in: 7...180, step: 7)
+                        Text("People with no interactions for this many days will appear in the \"Needs Attention\" section on the home screen.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+
+                    Toggle(isOn: $useWhatsApp) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Use WhatsApp for messaging")
+                            Text("The Message button on contacts will open WhatsApp instead of iMessage.")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
                 }
 
                 Section("About") {

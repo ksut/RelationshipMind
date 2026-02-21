@@ -7,6 +7,8 @@ enum InteractionType: String, Codable, CaseIterable {
     case text = "Text"
     case video = "Video"
     case social = "Social Media"
+    case email = "Email"
+    case whatsapp = "WhatsApp"
     case other = "Other"
 
     var icon: String {
@@ -16,6 +18,8 @@ enum InteractionType: String, Codable, CaseIterable {
         case .text: return "message.fill"
         case .video: return "video.fill"
         case .social: return "globe"
+        case .email: return "envelope.fill"
+        case .whatsapp: return "bubble.left.and.text.bubble.right.fill"
         case .other: return "ellipsis.circle.fill"
         }
     }

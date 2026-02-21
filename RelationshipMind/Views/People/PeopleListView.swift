@@ -187,20 +187,16 @@ struct PeopleListView: View {
         syncResult = nil
         syncError = nil
 
-        Task {
+        Task { @MainActor in
             do {
                 let result = try await contactSyncService.syncContacts(modelContext: modelContext)
-                await MainActor.run {
-                    syncResult = result
-                    showingSyncAlert = true
-                    isSyncing = false
-                }
+                syncResult = result
+                showingSyncAlert = true
+                isSyncing = false
             } catch {
-                await MainActor.run {
-                    syncError = error
-                    showingSyncAlert = true
-                    isSyncing = false
-                }
+                syncError = error
+                showingSyncAlert = true
+                isSyncing = false
             }
         }
     }

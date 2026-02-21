@@ -5,6 +5,8 @@ struct PersonDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allTouchpoints: [Touchpoint]
     @Bindable var person: Person
+    @Environment(\.openURL) private var openURL
+    @AppStorage("useWhatsApp") private var useWhatsApp: Bool = false
     @State private var showingLogTouchpoint = false
     @State private var isTimelineExpanded = false
 
@@ -80,7 +82,41 @@ struct PersonDetailView: View {
     }
 
     private var quickActionsSection: some View {
-        HStack(spacing: 16) {
+        VStack(spacing: 10) {
+            // Contact actions — icon-only compact row
+            HStack(spacing: 16) {
+                if let phone = person.phoneNumber, !phone.isEmpty {
+                    contactAction(icon: "phone.fill", label: "Call", color: .green) {
+                        let cleaned = phone.replacingOccurrences(of: " ", with: "")
+                        if let url = URL(string: "tel:\(cleaned)") { openURL(url) }
+                        logQuickTouchpoint(type: .phoneCall, note: "Phone call made")
+                    }
+
+                    contactAction(icon: "message.fill", label: "Message", color: .blue) {
+                        let cleaned = phone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: "")
+                        if let url = URL(string: "sms:\(cleaned)") { openURL(url) }
+                        logQuickTouchpoint(type: .text, note: "Text message sent")
+                    }
+
+                    if useWhatsApp {
+                        contactAction(icon: "ellipsis.message.fill", label: "WhatsApp", color: .green) {
+                            let cleaned = phone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: "")
+                            let waNumber = cleaned.hasPrefix("+") ? String(cleaned.dropFirst()) : cleaned
+                            if let url = URL(string: "https://wa.me/\(waNumber)") { openURL(url) }
+                            logQuickTouchpoint(type: .whatsapp, note: "WhatsApp message sent")
+                        }
+                    }
+                }
+
+                if let email = person.email, !email.isEmpty {
+                    contactAction(icon: "envelope.fill", label: "Email", color: .orange) {
+                        if let url = URL(string: "mailto:\(email)") { openURL(url) }
+                        logQuickTouchpoint(type: .email, note: "Email sent")
+                    }
+                }
+            }
+
+            // Log interaction button
             Button {
                 showingLogTouchpoint = true
             } label: {
@@ -91,13 +127,39 @@ struct PersonDetailView: View {
         }
     }
 
+    private func contactAction(icon: String, label: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 2) {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(color)
+                Text(label)
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+            }
+            .frame(width: 50)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func logQuickTouchpoint(type: InteractionType, note: String) {
+        let touchpoint = Touchpoint(
+            rawNote: note,
+            summary: note,
+            interactionType: type,
+            primaryPerson: person
+        )
+        modelContext.insert(touchpoint)
+        person.touchpoints.append(touchpoint)
+    }
+
     private var factsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Facts")
                 .font(.headline)
                 .foregroundColor(.secondary)
 
-            FactsPanel(facts: activeFacts)
+            FactsPanel(allFacts: person.facts)
         }
     }
 
@@ -161,18 +223,27 @@ struct PersonDetailView: View {
                 LazyVStack(spacing: 8) {
                     ForEach(person.relationships) { relationship in
                         if let relatedPerson = relationship.relatedPerson {
-                            HStack {
-                                PersonAvatarView(person: relatedPerson, size: 32)
-                                VStack(alignment: .leading) {
-                                    Text(relatedPerson.displayName)
-                                        .font(.subheadline)
-                                    Text(relationship.relationshipType)
+                            NavigationLink {
+                                PersonDetailView(person: relatedPerson)
+                            } label: {
+                                HStack {
+                                    PersonAvatarView(person: relatedPerson, size: 32)
+                                    VStack(alignment: .leading) {
+                                        Text(relatedPerson.displayName)
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                        Text(relationship.relationshipType)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
-                                Spacer()
+                                .padding(.vertical, 4)
                             }
-                            .padding(.vertical, 4)
+                            .buttonStyle(.plain)
                         }
                     }
                 }

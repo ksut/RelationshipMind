@@ -1,10 +1,14 @@
 import SwiftUI
 
 struct FactsPanel: View {
-    let facts: [Fact]
+    let allFacts: [Fact]
 
-    var groupedFacts: [(FactCategory, [Fact])] {
-        let grouped = Dictionary(grouping: facts) { $0.category }
+    private var activeFacts: [Fact] {
+        allFacts.filter { !$0.isSuperseded }
+    }
+
+    private var groupedFacts: [(FactCategory, [Fact])] {
+        let grouped = Dictionary(grouping: activeFacts) { $0.category }
         return grouped.sorted { $0.key.rawValue < $1.key.rawValue }
     }
 
@@ -20,7 +24,10 @@ struct FactsPanel: View {
 
                     // Facts in this category
                     ForEach(categoryFacts) { fact in
-                        FactRowView(fact: fact)
+                        FactRowView(
+                            fact: fact,
+                            supersededFacts: supersededChain(for: fact)
+                        )
                     }
                 }
                 .padding()
@@ -29,10 +36,19 @@ struct FactsPanel: View {
             }
         }
     }
+
+    /// Finds all superseded facts with the same category + key, sorted newest first.
+    private func supersededChain(for fact: Fact) -> [Fact] {
+        allFacts
+            .filter { $0.isSuperseded && $0.category == fact.category && $0.key == fact.key }
+            .sorted { $0.extractedAt > $1.extractedAt }
+    }
 }
 
 struct FactRowView: View {
     let fact: Fact
+    var supersededFacts: [Fact] = []
+    @State private var isHistoryExpanded = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -40,6 +56,17 @@ struct FactRowView: View {
                 Text(fact.key.replacingOccurrences(of: "_", with: " ").capitalized)
                     .font(.caption)
                     .foregroundColor(.secondary)
+
+                if !supersededFacts.isEmpty {
+                    Text("Updated")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.blue.opacity(0.12))
+                        .cornerRadius(4)
+                }
 
                 Spacer()
 
@@ -65,6 +92,43 @@ struct FactRowView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
+
+            // Expandable superseded history
+            if !supersededFacts.isEmpty {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isHistoryExpanded.toggle()
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isHistoryExpanded ? "chevron.up" : "chevron.down")
+                            .font(.caption2)
+                        Text("\(supersededFacts.count) previous value\(supersededFacts.count == 1 ? "" : "s")")
+                            .font(.caption2)
+                    }
+                    .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+
+                if isHistoryExpanded {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(supersededFacts) { oldFact in
+                            HStack(spacing: 6) {
+                                Text(oldFact.value)
+                                    .font(.caption)
+                                    .strikethrough()
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text(oldFact.extractedAt, style: .date)
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary.opacity(0.7))
+                            }
+                        }
+                    }
+                    .padding(.leading, 8)
+                    .padding(.top, 2)
+                }
+            }
         }
         .padding(.vertical, 4)
     }
@@ -78,6 +142,6 @@ struct FactRowView: View {
         Fact(category: .location, key: "city", value: "San Francisco", confidence: 0.85)
     ]
 
-    return FactsPanel(facts: facts)
+    return FactsPanel(allFacts: facts)
         .padding()
 }

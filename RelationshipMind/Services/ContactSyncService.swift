@@ -28,6 +28,7 @@ final class ContactSyncService {
 
     // MARK: - Sync Contacts
 
+    @MainActor
     func syncContacts(modelContext: ModelContext) async throws -> SyncResult {
         if !isAuthorized {
             let granted = await requestAccess()
@@ -155,6 +156,7 @@ final class ContactSyncService {
         return changed
     }
 
+    @MainActor
     private func processRelationships(
         _ relationships: [(CNContact, CNLabeledValue<CNContactRelation>)],
         modelContext: ModelContext
@@ -198,6 +200,7 @@ final class ContactSyncService {
         return created
     }
 
+    @MainActor
     private func findPerson(
         byContactIdentifier identifier: String,
         modelContext: ModelContext
@@ -208,6 +211,7 @@ final class ContactSyncService {
         return try modelContext.fetch(descriptor).first
     }
 
+    @MainActor
     private func findPerson(
         byName name: String,
         modelContext: ModelContext
