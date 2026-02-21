@@ -11,7 +11,8 @@ struct ExtractionResult {
         var relationshipToPrimary: String?
         var isPrimary: Bool
         var matchedPerson: Person?
-        var isConfirmed: Bool = false
+        var fuzzyMatches: [FuzzyMatch]
+        var isConfirmed: Bool = true
     }
 
     struct ExtractedFact: Identifiable {
@@ -37,13 +38,11 @@ struct ExtractionReviewView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Summary section
                 Section("Summary") {
                     Text(extraction.summary)
                         .font(.body)
                 }
 
-                // Mentioned people section
                 if !extraction.mentionedPeople.isEmpty {
                     Section("People Mentioned") {
                         ForEach($extraction.mentionedPeople) { $person in
@@ -52,7 +51,6 @@ struct ExtractionReviewView: View {
                     }
                 }
 
-                // Extracted facts section
                 if !extraction.facts.isEmpty {
                     Section("Extracted Facts") {
                         ForEach($extraction.facts) { $fact in
@@ -61,7 +59,6 @@ struct ExtractionReviewView: View {
                     }
                 }
 
-                // Original note
                 Section("Original Note") {
                     Text(touchpoint.rawNote)
                         .font(.caption)
@@ -72,7 +69,7 @@ struct ExtractionReviewView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
+                    Button("Skip", action: onCancel)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Confirm", action: onConfirm)
@@ -86,45 +83,106 @@ struct ExtractionReviewView: View {
 struct MentionedPersonRow: View {
     @Binding var person: ExtractionResult.MentionedPerson
 
+    private var hasFuzzyMatches: Bool {
+        person.matchedPerson == nil && !person.fuzzyMatches.isEmpty
+    }
+
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(person.name)
-                        .font(.headline)
-                    if person.isPrimary {
-                        Text("Primary")
-                            .font(.caption2)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.accentColor.opacity(0.2))
-                            .foregroundColor(.accentColor)
-                            .cornerRadius(4)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(person.name)
+                            .font(.headline)
+                        if person.isPrimary {
+                            Text("Primary")
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.accentColor.opacity(0.2))
+                                .foregroundColor(.accentColor)
+                                .cornerRadius(4)
+                        }
+                    }
+
+                    if let relationship = person.relationshipToPrimary {
+                        Text(relationship)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    // Match status
+                    if let matched = person.matchedPerson {
+                        Label("Matched: \(matched.displayName)", systemImage: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                    } else if person.fuzzyMatches.isEmpty {
+                        Label("New person — will be created", systemImage: "plus.circle")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    } else {
+                        Label("Multiple possible matches", systemImage: "questionmark.circle")
+                            .font(.caption)
+                            .foregroundColor(.orange)
                     }
                 }
 
-                if let relationship = person.relationshipToPrimary {
-                    Text(relationship)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Spacer()
 
-                if let matched = person.matchedPerson {
-                    Label("Matched: \(matched.displayName)", systemImage: "checkmark.circle.fill")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                } else {
-                    Label("New person - will be created", systemImage: "plus.circle")
-                        .font(.caption)
-                        .foregroundColor(.orange)
+                if !person.isPrimary {
+                    Toggle("", isOn: $person.isConfirmed)
+                        .labelsHidden()
                 }
             }
 
-            Spacer()
+            // Show fuzzy match options when there are multiple possible matches
+            if !person.isPrimary && hasFuzzyMatches {
+                let matches = Array(person.fuzzyMatches.prefix(3))
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(Array(matches.enumerated()), id: \.offset) { _, match in
+                        Button {
+                            person.matchedPerson = match.person
+                        } label: {
+                            HStack {
+                                Image(systemName: "person.circle")
+                                    .foregroundColor(.accentColor)
+                                Text(match.person.displayName)
+                                    .font(.subheadline)
+                                Spacer()
+                                Text("\(Int(match.score * 100))%")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                    }
 
-            Toggle("", isOn: $person.isConfirmed)
-                .labelsHidden()
+                    Button {
+                        person.matchedPerson = nil
+                        person.fuzzyMatches = []
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle")
+                                .foregroundColor(.orange)
+                            Text("Create new person")
+                                .font(.subheadline)
+                                .foregroundColor(.orange)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.top, 2)
+            }
         }
+        .padding(.vertical, 2)
     }
 }
 
@@ -144,7 +202,6 @@ struct ExtractedFactRow: View {
 
                     Spacer()
 
-                    // Confidence indicator
                     Text("\(Int(fact.confidence * 100))%")
                         .font(.caption2)
                         .foregroundColor(fact.confidence >= 0.8 ? .green : .orange)
@@ -170,8 +227,8 @@ struct ExtractedFactRow: View {
     @Previewable @State var extraction = ExtractionResult(
         summary: "Had a productive meeting with John about his new role at Apple",
         mentionedPeople: [
-            .init(name: "John", relationshipToPrimary: nil, isPrimary: true, matchedPerson: nil),
-            .init(name: "Sarah", relationshipToPrimary: "colleague", isPrimary: false, matchedPerson: nil)
+            .init(name: "John", relationshipToPrimary: nil, isPrimary: true, matchedPerson: nil, fuzzyMatches: []),
+            .init(name: "Sarah", relationshipToPrimary: "colleague", isPrimary: false, matchedPerson: nil, fuzzyMatches: [])
         ],
         facts: [
             .init(personName: "John", category: .career, key: "company", value: "Apple", isTimeSensitive: false, confidence: 0.95),
@@ -181,7 +238,7 @@ struct ExtractedFactRow: View {
 
     let touchpoint = Touchpoint(rawNote: "Met with John today. He told me about his new job at Apple as a Senior Engineer. His colleague Sarah was also there.")
 
-    return ExtractionReviewView(
+    ExtractionReviewView(
         touchpoint: touchpoint,
         extraction: $extraction,
         onConfirm: {},

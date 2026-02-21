@@ -17,6 +17,11 @@ struct LogTouchpointView: View {
     @State private var showingError = false
     @State private var speechService = SpeechService()
 
+    // Review flow state
+    @State private var showingExtractionReview = false
+    @State private var extractionResult: ExtractionResult?
+    @State private var savedTouchpoint: Touchpoint?
+
     private let extractionService = ExtractionService()
 
     enum LogStep {
@@ -52,6 +57,20 @@ struct LogTouchpointView: View {
             if let person = preselectedPerson {
                 selectedPerson = person
                 currentStep = .writeNote
+            }
+        }
+        .sheet(isPresented: $showingExtractionReview) {
+            if let touchpoint = savedTouchpoint, var result = extractionResult {
+                ExtractionReviewView(
+                    touchpoint: touchpoint,
+                    extraction: Binding(
+                        get: { self.extractionResult ?? result },
+                        set: { self.extractionResult = $0 }
+                    ),
+                    onConfirm: { confirmExtraction() },
+                    onCancel: { cancelExtraction() }
+                )
+                .interactiveDismissDisabled()
             }
         }
     }
@@ -168,7 +187,7 @@ struct LogTouchpointView: View {
                         if isSaving {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle())
-                            Text("Saving...")
+                            Text("Extracting...")
                                 .fontWeight(.semibold)
                                 .padding(.leading, 8)
                         } else {
@@ -182,7 +201,9 @@ struct LogTouchpointView: View {
             }
         }
         .alert("Extraction Info", isPresented: $showingError) {
-            Button("OK") { }
+            Button("OK") {
+                dismiss()
+            }
         } message: {
             Text(extractionError ?? "Unknown error")
         }
@@ -231,42 +252,62 @@ struct LogTouchpointView: View {
         do {
             try modelContext.save()
             print("Saved touchpoint: \(touchpoint.rawNote) for \(person.displayName)")
-            print("Person now has \(person.touchpoints.count) touchpoints")
         } catch {
             print("Failed to save: \(error)")
             isSaving = false
             return
         }
 
-        // Run extraction in background
+        savedTouchpoint = touchpoint
+
+        // Run extraction (Phase A only — no database writes)
         Task {
             do {
-                try await extractionService.extractAndSave(
+                let result = try await extractionService.extract(
                     touchpoint: touchpoint,
                     modelContext: modelContext
                 )
-                print("Extraction completed successfully")
                 await MainActor.run {
-                    dismiss()
+                    isSaving = false
+                    extractionResult = result
+                    showingExtractionReview = true
                 }
             } catch {
                 print("Extraction failed: \(error.localizedDescription)")
                 await MainActor.run {
                     isSaving = false
-                    // Still dismiss but show what happened
                     if let apiError = error as? ClaudeAPIError {
                         extractionError = "Note saved. AI extraction skipped: \(apiError.localizedDescription)"
                     } else {
                         extractionError = "Note saved. AI extraction skipped: \(error.localizedDescription)"
                     }
                     showingError = true
-                    // Dismiss after short delay so user sees the saved note
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        dismiss()
-                    }
                 }
             }
         }
+    }
+
+    private func confirmExtraction() {
+        guard let touchpoint = savedTouchpoint, let result = extractionResult else { return }
+
+        do {
+            try extractionService.saveExtractionResult(
+                result,
+                touchpoint: touchpoint,
+                modelContext: modelContext
+            )
+            print("Extraction confirmed and saved")
+        } catch {
+            print("Failed to save extraction: \(error)")
+        }
+
+        showingExtractionReview = false
+        dismiss()
+    }
+
+    private func cancelExtraction() {
+        showingExtractionReview = false
+        dismiss()
     }
 }
 

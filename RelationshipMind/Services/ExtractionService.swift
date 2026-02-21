@@ -8,10 +8,14 @@ final class ExtractionService {
     var isExtracting = false
     var lastError: Error?
 
-    func extractAndSave(
+    // MARK: - Phase A: Extract (no database writes)
+
+    /// Calls Claude API and returns an ExtractionResult with fuzzy-matched people.
+    /// Does NOT write anything to the database.
+    func extract(
         touchpoint: Touchpoint,
         modelContext: ModelContext
-    ) async throws {
+    ) async throws -> ExtractionResult {
         guard let primaryPerson = touchpoint.primaryPerson else {
             throw ExtractionError.noPrimaryPerson
         }
@@ -27,69 +31,75 @@ final class ExtractionService {
                 primaryPersonName: primaryPerson.displayName
             )
 
-            // Update touchpoint summary
-            touchpoint.summary = response.summary
+            // Fetch all people for fuzzy matching
+            let descriptor = FetchDescriptor<Person>()
+            let allPeople = try modelContext.fetch(descriptor)
 
-            // Process mentioned people
-            for mentionedPerson in response.mentionedPeople {
-                if !mentionedPerson.isPrimary {
-                    // Try to find existing person or create new one
-                    let person = try findOrCreatePerson(
-                        name: mentionedPerson.name,
-                        modelContext: modelContext
-                    )
+            // Build mentioned people with fuzzy matches
+            var mentionedPeople: [ExtractionResult.MentionedPerson] = []
 
-                    // Add to mentioned people if not already there
-                    if !touchpoint.mentionedPeople.contains(where: { $0.id == person.id }) {
-                        touchpoint.mentionedPeople.append(person)
-                    }
-
-                    // Create relationship if specified
-                    if let relationshipType = mentionedPerson.relationshipToPrimary,
-                       !relationshipType.isEmpty {
-                        createRelationshipIfNeeded(
-                            from: primaryPerson,
-                            to: person,
-                            type: relationshipType,
-                            modelContext: modelContext
-                        )
-                    }
+            for mentioned in response.mentionedPeople {
+                if mentioned.isPrimary {
+                    mentionedPeople.append(ExtractionResult.MentionedPerson(
+                        name: mentioned.name,
+                        relationshipToPrimary: mentioned.relationshipToPrimary,
+                        isPrimary: true,
+                        matchedPerson: primaryPerson,
+                        fuzzyMatches: [],
+                        isConfirmed: true
+                    ))
+                    continue
                 }
-            }
 
-            // Process extracted facts
-            for factData in response.facts {
-                let person = try findPerson(
-                    name: factData.personName,
-                    primaryPerson: primaryPerson,
-                    modelContext: modelContext
+                let matches = FuzzyMatcher.findMatches(
+                    for: mentioned.name,
+                    in: allPeople,
+                    threshold: 0.5
                 )
 
-                guard let person = person else { continue }
+                var matchedPerson: Person? = nil
+                var fuzzyMatches = matches
 
+                // Auto-select if top match score >= 0.85
+                if let top = matches.first, top.score >= 0.85 {
+                    matchedPerson = top.person
+                }
+
+                mentionedPeople.append(ExtractionResult.MentionedPerson(
+                    name: mentioned.name,
+                    relationshipToPrimary: mentioned.relationshipToPrimary,
+                    isPrimary: false,
+                    matchedPerson: matchedPerson,
+                    fuzzyMatches: fuzzyMatches,
+                    isConfirmed: true
+                ))
+            }
+
+            // Build extracted facts
+            var facts: [ExtractionResult.ExtractedFact] = []
+            for factData in response.facts {
                 let category = parseCategory(factData.category)
                 let timeProgression = parseTimeProgression(factData.timeProgression)
                 let factDate = parseDate(factData.factDate)
 
-                let fact = Fact(
-                    person: person,
-                    sourceTouchpoint: touchpoint,
+                facts.append(ExtractionResult.ExtractedFact(
+                    personName: factData.personName,
                     category: category,
                     key: factData.key,
                     value: factData.value,
                     factDate: factDate,
                     isTimeSensitive: factData.isTimeSensitive,
                     timeProgression: timeProgression,
-                    confidence: factData.confidence
-                )
-
-                modelContext.insert(fact)
-                person.facts.append(fact)
-                touchpoint.extractedFacts.append(fact)
-                print("Extracted fact: \(factData.key) = \(factData.value) for \(person.displayName)")
+                    confidence: factData.confidence,
+                    isConfirmed: true
+                ))
             }
 
-            try modelContext.save()
+            return ExtractionResult(
+                summary: response.summary,
+                mentionedPeople: mentionedPeople,
+                facts: facts
+            )
 
         } catch {
             lastError = error
@@ -97,73 +107,130 @@ final class ExtractionService {
         }
     }
 
-    // MARK: - Private Helpers
+    // MARK: - Phase B: Save confirmed extraction results
 
-    private func findOrCreatePerson(
-        name: String,
+    /// Writes confirmed people, facts, and relationships to the database.
+    /// Handles fact supersession for same category+key on a person.
+    func saveExtractionResult(
+        _ result: ExtractionResult,
+        touchpoint: Touchpoint,
         modelContext: ModelContext
-    ) throws -> Person {
-        // Try to find existing person
-        if let existing = try findPersonByName(name, modelContext: modelContext) {
-            return existing
+    ) throws {
+        guard let primaryPerson = touchpoint.primaryPerson else {
+            throw ExtractionError.noPrimaryPerson
         }
 
-        // Create new app-local person
-        let components = name.split(separator: " ", maxSplits: 1)
-        let firstName = String(components.first ?? Substring(name))
-        let lastName = components.count > 1 ? String(components[1]) : ""
+        // Update touchpoint summary
+        touchpoint.summary = result.summary
 
-        let person = Person(
-            firstName: firstName,
-            lastName: lastName,
-            source: .appLocal
-        )
-        modelContext.insert(person)
-        return person
+        // Process confirmed mentioned people
+        for mentioned in result.mentionedPeople where mentioned.isConfirmed && !mentioned.isPrimary {
+            let person: Person
+            if let matched = mentioned.matchedPerson {
+                person = matched
+            } else {
+                // Create new app-local person
+                let components = mentioned.name.split(separator: " ", maxSplits: 1)
+                let firstName = String(components.first ?? Substring(mentioned.name))
+                let lastName = components.count > 1 ? String(components[1]) : ""
+                person = Person(firstName: firstName, lastName: lastName, source: .appLocal)
+                modelContext.insert(person)
+            }
+
+            // Add to mentioned people if not already there
+            if !touchpoint.mentionedPeople.contains(where: { $0.id == person.id }) {
+                touchpoint.mentionedPeople.append(person)
+            }
+
+            // Create relationship if specified
+            if let relationshipType = mentioned.relationshipToPrimary,
+               !relationshipType.isEmpty {
+                createRelationshipIfNeeded(
+                    from: primaryPerson,
+                    to: person,
+                    type: relationshipType,
+                    modelContext: modelContext
+                )
+            }
+        }
+
+        // Process confirmed facts
+        for factData in result.facts where factData.isConfirmed {
+            // Resolve which person this fact belongs to
+            let person = resolvePerson(
+                name: factData.personName,
+                primaryPerson: primaryPerson,
+                mentionedPeople: result.mentionedPeople
+            )
+
+            guard let person = person else { continue }
+
+            let newFact = Fact(
+                person: person,
+                sourceTouchpoint: touchpoint,
+                category: factData.category,
+                key: factData.key,
+                value: factData.value,
+                factDate: factData.factDate,
+                isTimeSensitive: factData.isTimeSensitive,
+                timeProgression: factData.timeProgression,
+                confidence: factData.confidence
+            )
+
+            // Supersession: check for existing active fact with same category + key
+            let existingFact = person.facts.first { f in
+                !f.isSuperseded &&
+                f.category == factData.category &&
+                f.key.lowercased() == factData.key.lowercased() &&
+                f.id != newFact.id
+            }
+            if let existing = existingFact {
+                existing.isSuperseded = true
+                existing.supersededBy = newFact
+            }
+
+            modelContext.insert(newFact)
+            person.facts.append(newFact)
+            touchpoint.extractedFacts.append(newFact)
+        }
+
+        try modelContext.save()
     }
 
-    private func findPerson(
+    // MARK: - Backward-compatible wrapper
+
+    /// Calls extract + save in one shot (no review step).
+    func extractAndSave(
+        touchpoint: Touchpoint,
+        modelContext: ModelContext
+    ) async throws {
+        let result = try await extract(touchpoint: touchpoint, modelContext: modelContext)
+        try saveExtractionResult(result, touchpoint: touchpoint, modelContext: modelContext)
+    }
+
+    // MARK: - Private Helpers
+
+    private func resolvePerson(
         name: String,
         primaryPerson: Person,
-        modelContext: ModelContext
-    ) throws -> Person? {
+        mentionedPeople: [ExtractionResult.MentionedPerson]
+    ) -> Person? {
         // Check if it's the primary person
         if name.lowercased() == primaryPerson.displayName.lowercased() ||
            name.lowercased() == primaryPerson.firstName.lowercased() {
             return primaryPerson
         }
 
-        return try findPersonByName(name, modelContext: modelContext)
-    }
-
-    private func findPersonByName(
-        _ name: String,
-        modelContext: ModelContext
-    ) throws -> Person? {
-        let components = name.split(separator: " ", maxSplits: 1)
-        let firstName = String(components.first ?? "")
-        let lastName = components.count > 1 ? String(components[1]) : ""
-
-        // Fetch all and filter (SwiftData predicate limitations)
-        let descriptor = FetchDescriptor<Person>()
-        let allPeople = try modelContext.fetch(descriptor)
-
-        // Try exact match first
-        if let exact = allPeople.first(where: {
-            $0.firstName.lowercased() == firstName.lowercased() &&
-            $0.lastName.lowercased() == lastName.lowercased()
+        // Find in confirmed mentioned people
+        if let mentioned = mentionedPeople.first(where: {
+            $0.isConfirmed &&
+            $0.name.lowercased() == name.lowercased()
         }) {
-            return exact
+            return mentioned.matchedPerson
         }
 
-        // Try first name match
-        if let firstNameMatch = allPeople.first(where: {
-            $0.firstName.lowercased() == firstName.lowercased()
-        }) {
-            return firstNameMatch
-        }
-
-        return nil
+        // Fallback: if the fact names the primary person differently, use primary
+        return primaryPerson
     }
 
     private func createRelationshipIfNeeded(
@@ -172,7 +239,6 @@ final class ExtractionService {
         type: String,
         modelContext: ModelContext
     ) {
-        // Check if relationship already exists
         let existingRelationship = person.relationships.first { rel in
             rel.relatedPerson?.id == relatedPerson.id
         }
