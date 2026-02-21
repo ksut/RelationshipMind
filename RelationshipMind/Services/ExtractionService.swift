@@ -58,7 +58,7 @@ final class ExtractionService {
                 )
 
                 var matchedPerson: Person? = nil
-                var fuzzyMatches = matches
+                let fuzzyMatches = matches
 
                 // Auto-select if top match score >= 0.85
                 if let top = matches.first, top.score >= 0.85 {
@@ -275,7 +275,7 @@ final class ExtractionService {
         case "academicyear": return .academicYear
         case "age": return .age
         case "tenure": return .tenure
-        case "none": return .none
+        case "none": return TimeProgression.none
         default: return nil
         }
     }

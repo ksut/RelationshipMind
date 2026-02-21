@@ -60,7 +60,7 @@ struct LogTouchpointView: View {
             }
         }
         .sheet(isPresented: $showingExtractionReview) {
-            if let touchpoint = savedTouchpoint, var result = extractionResult {
+            if let touchpoint = savedTouchpoint, let result = extractionResult {
                 ExtractionReviewView(
                     touchpoint: touchpoint,
                     extraction: Binding(
