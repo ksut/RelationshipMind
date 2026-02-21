@@ -1,0 +1,517 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1000001260D0A0000000001 /* RelationshipMindApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002260D0A0000000001 /* RelationshipMindApp.swift */; };
+		A1000003260D0A0000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000004260D0A0000000002 /* ContentView.swift */; };
+		A1000005260D0A0000000003 /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000006260D0A0000000003 /* Person.swift */; };
+		A1000007260D0A0000000004 /* Touchpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000008260D0A0000000004 /* Touchpoint.swift */; };
+		A1000009260D0A0000000005 /* Fact.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000A260D0A0000000005 /* Fact.swift */; };
+		A100000B260D0A0000000006 /* PersonRelationship.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000C260D0A0000000006 /* PersonRelationship.swift */; };
+		A100000D260D0A0000000007 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000E260D0A0000000007 /* HomeView.swift */; };
+		A100000F260D0A0000000008 /* TouchpointCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000010260D0A0000000008 /* TouchpointCardView.swift */; };
+		A1000011260D0A0000000009 /* PeopleListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000012260D0A0000000009 /* PeopleListView.swift */; };
+		A1000013260D0A000000000A /* PersonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000014260D0A000000000A /* PersonDetailView.swift */; };
+		A1000015260D0A000000000B /* FactsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000016260D0A000000000B /* FactsPanel.swift */; };
+		A1000017260D0A000000000C /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000018260D0A000000000C /* TimelineView.swift */; };
+		A1000019260D0A000000000D /* AddPersonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001A260D0A000000000D /* AddPersonView.swift */; };
+		A100001B260D0A000000000E /* LogTouchpointView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001C260D0A000000000E /* LogTouchpointView.swift */; };
+		A100001D260D0A000000000F /* ContactPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001E260D0A000000000F /* ContactPickerView.swift */; };
+		A100001F260D0A0000000010 /* DictationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000020260D0A0000000010 /* DictationView.swift */; };
+		A1000021260D0A0000000011 /* ExtractionReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000022260D0A0000000011 /* ExtractionReviewView.swift */; };
+		A1000023260D0A0000000012 /* PersonAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000024260D0A0000000012 /* PersonAvatarView.swift */; };
+		A1000025260D0A0000000013 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000026260D0A0000000013 /* InsightsView.swift */; };
+		A1000027260D0A0000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000028260D0A0000000014 /* Assets.xcassets */; };
+		A1000029260D0A0000000016 /* ContactSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100002B260D0A0000000017 /* ContactSyncService.swift */; };
+		A100002C260D0A0000000018 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100002D260D0A0000000019 /* KeychainHelper.swift */; };
+		A100002E260D0A000000001A /* ClaudeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100002F260D0A000000001B /* ClaudeAPIService.swift */; };
+		A1000030260D0A000000001C /* ExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000031260D0A000000001D /* ExtractionService.swift */; };
+		A1000032260D0A000000001E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000033260D0A000000001F /* SettingsView.swift */; };
+		A1000034260D0A0000000020 /* SpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000035260D0A0000000021 /* SpeechService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1000000260D0A0000000000 /* RelationshipMind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RelationshipMind.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000002260D0A0000000001 /* RelationshipMindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelationshipMindApp.swift; sourceTree = "<group>"; };
+		A1000004260D0A0000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1000006260D0A0000000003 /* Person.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Person.swift; sourceTree = "<group>"; };
+		A1000008260D0A0000000004 /* Touchpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Touchpoint.swift; sourceTree = "<group>"; };
+		A100000A260D0A0000000005 /* Fact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fact.swift; sourceTree = "<group>"; };
+		A100000C260D0A0000000006 /* PersonRelationship.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonRelationship.swift; sourceTree = "<group>"; };
+		A100000E260D0A0000000007 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A1000010260D0A0000000008 /* TouchpointCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchpointCardView.swift; sourceTree = "<group>"; };
+		A1000012260D0A0000000009 /* PeopleListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleListView.swift; sourceTree = "<group>"; };
+		A1000014260D0A000000000A /* PersonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonDetailView.swift; sourceTree = "<group>"; };
+		A1000016260D0A000000000B /* FactsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactsPanel.swift; sourceTree = "<group>"; };
+		A1000018260D0A000000000C /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		A100001A260D0A000000000D /* AddPersonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPersonView.swift; sourceTree = "<group>"; };
+		A100001C260D0A000000000E /* LogTouchpointView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTouchpointView.swift; sourceTree = "<group>"; };
+		A100001E260D0A000000000F /* ContactPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPickerView.swift; sourceTree = "<group>"; };
+		A1000020260D0A0000000010 /* DictationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationView.swift; sourceTree = "<group>"; };
+		A1000022260D0A0000000011 /* ExtractionReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionReviewView.swift; sourceTree = "<group>"; };
+		A1000024260D0A0000000012 /* PersonAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonAvatarView.swift; sourceTree = "<group>"; };
+		A1000026260D0A0000000013 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		A1000028260D0A0000000014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A100002A260D0A0000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A100002B260D0A0000000017 /* ContactSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSyncService.swift; sourceTree = "<group>"; };
+		A100002D260D0A0000000019 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		A100002F260D0A000000001B /* ClaudeAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPIService.swift; sourceTree = "<group>"; };
+		A1000031260D0A000000001D /* ExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtractionService.swift; sourceTree = "<group>"; };
+		A1000033260D0A000000001F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A1000035260D0A0000000021 /* SpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A10000F0260D0A0000000100 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10000F1260D0A0000000101 = {
+			isa = PBXGroup;
+			children = (
+				A10000F2260D0A0000000102 /* RelationshipMind */,
+				A10000F3260D0A0000000103 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A10000F2260D0A0000000102 /* RelationshipMind */ = {
+			isa = PBXGroup;
+			children = (
+				A1000002260D0A0000000001 /* RelationshipMindApp.swift */,
+				A100002A260D0A0000000015 /* Info.plist */,
+				A1000028260D0A0000000014 /* Assets.xcassets */,
+				A10000F4260D0A0000000104 /* Models */,
+				A10000F5260D0A0000000105 /* Views */,
+				A10000FA260D0A000000010A /* ViewModels */,
+				A10000FB260D0A000000010B /* Services */,
+				A10000FC260D0A000000010C /* Utilities */,
+			);
+			path = RelationshipMind;
+			sourceTree = "<group>";
+		};
+		A10000F3260D0A0000000103 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000260D0A0000000000 /* RelationshipMind.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A10000F4260D0A0000000104 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A1000006260D0A0000000003 /* Person.swift */,
+				A1000008260D0A0000000004 /* Touchpoint.swift */,
+				A100000A260D0A0000000005 /* Fact.swift */,
+				A100000C260D0A0000000006 /* PersonRelationship.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A10000F5260D0A0000000105 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A1000004260D0A0000000002 /* ContentView.swift */,
+				A1000026260D0A0000000013 /* InsightsView.swift */,
+				A1000033260D0A000000001F /* SettingsView.swift */,
+				A10000F6260D0A0000000106 /* Home */,
+				A10000F7260D0A0000000107 /* People */,
+				A10000F8260D0A0000000108 /* Touchpoint */,
+				A10000F9260D0A0000000109 /* Shared */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A10000F6260D0A0000000106 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A100000E260D0A0000000007 /* HomeView.swift */,
+				A1000010260D0A0000000008 /* TouchpointCardView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		A10000F7260D0A0000000107 /* People */ = {
+			isa = PBXGroup;
+			children = (
+				A1000012260D0A0000000009 /* PeopleListView.swift */,
+				A1000014260D0A000000000A /* PersonDetailView.swift */,
+				A1000016260D0A000000000B /* FactsPanel.swift */,
+				A1000018260D0A000000000C /* TimelineView.swift */,
+				A100001A260D0A000000000D /* AddPersonView.swift */,
+			);
+			path = People;
+			sourceTree = "<group>";
+		};
+		A10000F8260D0A0000000108 /* Touchpoint */ = {
+			isa = PBXGroup;
+			children = (
+				A100001C260D0A000000000E /* LogTouchpointView.swift */,
+				A100001E260D0A000000000F /* ContactPickerView.swift */,
+				A1000020260D0A0000000010 /* DictationView.swift */,
+				A1000022260D0A0000000011 /* ExtractionReviewView.swift */,
+			);
+			path = Touchpoint;
+			sourceTree = "<group>";
+		};
+		A10000F9260D0A0000000109 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A1000024260D0A0000000012 /* PersonAvatarView.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		A10000FA260D0A000000010A /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A10000FB260D0A000000010B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A100002B260D0A0000000017 /* ContactSyncService.swift */,
+				A100002F260D0A000000001B /* ClaudeAPIService.swift */,
+				A1000031260D0A000000001D /* ExtractionService.swift */,
+				A1000035260D0A0000000021 /* SpeechService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A10000FC260D0A000000010C /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				A100002D260D0A0000000019 /* KeychainHelper.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1000100260D0A0000000200 /* RelationshipMind */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000101260D0A0000000201 /* Build configuration list for PBXNativeTarget "RelationshipMind" */;
+			buildPhases = (
+				A10000FE260D0A0000000300 /* Sources */,
+				A10000F0260D0A0000000100 /* Frameworks */,
+				A10000FF260D0A0000000301 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RelationshipMind;
+			productName = RelationshipMind;
+			productReference = A1000000260D0A0000000000 /* RelationshipMind.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1000200260D0A0000000400 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					A1000100260D0A0000000200 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A1000201260D0A0000000401 /* Build configuration list for PBXProject "RelationshipMind" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000F1260D0A0000000101;
+			productRefGroup = A10000F3260D0A0000000103 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1000100260D0A0000000200 /* RelationshipMind */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A10000FF260D0A0000000301 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000027260D0A0000000014 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A10000FE260D0A0000000300 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000001260D0A0000000001 /* RelationshipMindApp.swift in Sources */,
+				A1000003260D0A0000000002 /* ContentView.swift in Sources */,
+				A1000005260D0A0000000003 /* Person.swift in Sources */,
+				A1000007260D0A0000000004 /* Touchpoint.swift in Sources */,
+				A1000009260D0A0000000005 /* Fact.swift in Sources */,
+				A100000B260D0A0000000006 /* PersonRelationship.swift in Sources */,
+				A100000D260D0A0000000007 /* HomeView.swift in Sources */,
+				A100000F260D0A0000000008 /* TouchpointCardView.swift in Sources */,
+				A1000011260D0A0000000009 /* PeopleListView.swift in Sources */,
+				A1000013260D0A000000000A /* PersonDetailView.swift in Sources */,
+				A1000015260D0A000000000B /* FactsPanel.swift in Sources */,
+				A1000017260D0A000000000C /* TimelineView.swift in Sources */,
+				A1000019260D0A000000000D /* AddPersonView.swift in Sources */,
+				A100001B260D0A000000000E /* LogTouchpointView.swift in Sources */,
+				A100001D260D0A000000000F /* ContactPickerView.swift in Sources */,
+				A100001F260D0A0000000010 /* DictationView.swift in Sources */,
+				A1000021260D0A0000000011 /* ExtractionReviewView.swift in Sources */,
+				A1000023260D0A0000000012 /* PersonAvatarView.swift in Sources */,
+				A1000025260D0A0000000013 /* InsightsView.swift in Sources */,
+				A1000029260D0A0000000016 /* ContactSyncService.swift in Sources */,
+				A100002C260D0A0000000018 /* KeychainHelper.swift in Sources */,
+				A100002E260D0A000000001A /* ClaudeAPIService.swift in Sources */,
+				A1000030260D0A000000001C /* ExtractionService.swift in Sources */,
+				A1000032260D0A000000001E /* SettingsView.swift in Sources */,
+				A1000034260D0A0000000020 /* SpeechService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A1000300260D0A0000000500 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A1000301260D0A0000000501 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A1000302260D0A0000000502 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 6HKXDK3T2K;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RelationshipMind/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = RelationshipMind;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSContactsUsageDescription = "RelationshipMind syncs your contacts to help you track relationships.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "RelationshipMind needs microphone access for voice dictation.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "RelationshipMind uses speech recognition to transcribe your voice notes.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ksutariya.relationshipmind.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1000303260D0A0000000503 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 6HKXDK3T2K;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RelationshipMind/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = RelationshipMind;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				INFOPLIST_KEY_NSContactsUsageDescription = "RelationshipMind syncs your contacts to help you track relationships.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "RelationshipMind needs microphone access for voice dictation.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "RelationshipMind uses speech recognition to transcribe your voice notes.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ksutariya.relationshipmind.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1000101260D0A0000000201 /* Build configuration list for PBXNativeTarget "RelationshipMind" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000302260D0A0000000502 /* Debug */,
+				A1000303260D0A0000000503 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000201260D0A0000000401 /* Build configuration list for PBXProject "RelationshipMind" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000300260D0A0000000500 /* Debug */,
+				A1000301260D0A0000000501 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1000200260D0A0000000400 /* Project object */;
+}
