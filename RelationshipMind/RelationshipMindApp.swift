@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import LocalAuthentication
 
 @main
 struct RelationshipMindApp: App {
@@ -31,6 +32,19 @@ struct RelationshipMindApp: App {
         _isLocked = State(initialValue: UserDefaults.standard.bool(forKey: "biometricLockEnabled"))
     }
 
+    private func authenticateOnActive() {
+        let context = LAContext()
+        context.localizedCancelTitle = "Use Passcode"
+        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Unlock RelationshipMind") { success, _ in
+            DispatchQueue.main.async {
+                if success {
+                    HapticService.success()
+                    isLocked = false
+                }
+            }
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -55,6 +69,8 @@ struct RelationshipMindApp: App {
             if biometricLockEnabled && hasCompletedOnboarding {
                 if newPhase == .background {
                     isLocked = true
+                } else if newPhase == .active && isLocked {
+                    authenticateOnActive()
                 }
             }
         }

@@ -50,9 +50,6 @@ struct LockScreenView: View {
                 Spacer()
             }
         }
-        .onAppear {
-            authenticate()
-        }
     }
 
     private var biometricIcon: String {
