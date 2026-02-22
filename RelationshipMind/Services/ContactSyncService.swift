@@ -28,15 +28,7 @@ final class ContactSyncService {
 
     // MARK: - Sync Contacts
 
-    @MainActor
-    func syncContacts(modelContext: ModelContext) async throws -> SyncResult {
-        if !isAuthorized {
-            let granted = await requestAccess()
-            if !granted {
-                throw ContactSyncError.notAuthorized
-            }
-        }
-
+    private nonisolated func fetchContacts() throws -> [CNContact] {
         let keysToFetch: [CNKeyDescriptor] = [
             CNContactIdentifierKey as CNKeyDescriptor,
             CNContactGivenNameKey as CNKeyDescriptor,
@@ -48,14 +40,27 @@ final class ContactSyncService {
         ]
 
         let request = CNContactFetchRequest(keysToFetch: keysToFetch)
-
-        var fetchedContacts: [CNContact] = []
+        var contacts: [CNContact] = []
         try contactStore.enumerateContacts(with: request) { contact, _ in
-            // Only include contacts with a name
             if !contact.givenName.isEmpty || !contact.familyName.isEmpty {
-                fetchedContacts.append(contact)
+                contacts.append(contact)
             }
         }
+        return contacts
+    }
+
+    @MainActor
+    func syncContacts(modelContext: ModelContext) async throws -> SyncResult {
+        if !isAuthorized {
+            let granted = await requestAccess()
+            if !granted {
+                throw ContactSyncError.notAuthorized
+            }
+        }
+
+        let fetchedContacts = try await Task.detached { [self] in
+            try self.fetchContacts()
+        }.value
 
         // Get existing synced contacts from database
         // Note: Fetch all and filter in memory because SwiftData predicates can't compare enum cases
