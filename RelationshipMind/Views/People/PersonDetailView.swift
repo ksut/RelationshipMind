@@ -8,11 +8,13 @@ struct PersonDetailView: View {
     @Environment(\.openURL) private var openURL
     @AppStorage("useWhatsApp") private var useWhatsApp: Bool = false
     @State private var showingLogTouchpoint = false
-    @State private var isTimelineExpanded = false
+    @State private var showingAddNote = false
+    @State private var isTimelineExpanded = true
 
-    var personTouchpoints: [Touchpoint] {
+    /// Only real interactions — notes excluded (notes are just for facts)
+    var personInteractions: [Touchpoint] {
         allTouchpoints
-            .filter { $0.primaryPerson?.id == person.id }
+            .filter { $0.primaryPerson?.id == person.id && $0.interactionType.countsAsInteraction }
             .sorted { $0.occurredAt > $1.occurredAt }
     }
 
@@ -42,6 +44,9 @@ struct PersonDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingLogTouchpoint) {
             LogTouchpointView(preselectedPerson: person)
+        }
+        .sheet(isPresented: $showingAddNote) {
+            LogTouchpointView(preselectedPerson: person, isNoteOnly: true)
         }
     }
 
@@ -82,9 +87,9 @@ struct PersonDetailView: View {
     }
 
     private var quickActionsSection: some View {
-        VStack(spacing: 10) {
-            // Contact actions — icon-only compact row
-            HStack(spacing: 16) {
+        VStack(spacing: 12) {
+            // Contact actions — each in its own bubble, spread evenly
+            HStack(spacing: 10) {
                 if let phone = person.phoneNumber, !phone.isEmpty {
                     contactAction(icon: "phone.fill", label: "Call", color: .green) {
                         let cleaned = phone.replacingOccurrences(of: " ", with: "")
@@ -100,9 +105,12 @@ struct PersonDetailView: View {
 
                     if useWhatsApp {
                         contactAction(icon: "ellipsis.message.fill", label: "WhatsApp", color: .green) {
-                            let cleaned = phone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: "")
+                            let cleaned = phone.replacingOccurrences(of: " ", with: "")
+                                .replacingOccurrences(of: "-", with: "")
+                                .replacingOccurrences(of: "(", with: "")
+                                .replacingOccurrences(of: ")", with: "")
                             let waNumber = cleaned.hasPrefix("+") ? String(cleaned.dropFirst()) : cleaned
-                            if let url = URL(string: "https://wa.me/\(waNumber)") { openURL(url) }
+                            if let url = URL(string: "whatsapp://send?phone=\(waNumber)") { openURL(url) }
                             logQuickTouchpoint(type: .whatsapp, note: "WhatsApp message sent")
                         }
                     }
@@ -116,28 +124,59 @@ struct PersonDetailView: View {
                 }
             }
 
-            // Log interaction button
-            Button {
-                showingLogTouchpoint = true
-            } label: {
-                Label("Log Interaction", systemImage: "plus.circle.fill")
+            // Action buttons — full width, prominent
+            HStack(spacing: 10) {
+                Button {
+                    showingLogTouchpoint = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 18))
+                        Text("Interaction")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
                     .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    showingAddNote = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 18))
+                        Text("Note")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.borderedProminent)
         }
     }
 
     private func contactAction(icon: String, label: String, color: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 2) {
+            VStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 22, weight: .medium))
                     .foregroundColor(color)
                 Text(label)
-                    .font(.system(size: 10))
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.primary)
             }
-            .frame(width: 50)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
         }
         .buttonStyle(.plain)
     }
@@ -177,7 +216,7 @@ struct PersonDetailView: View {
 
                     Spacer()
 
-                    Text("\(personTouchpoints.count) interaction\(personTouchpoints.count == 1 ? "" : "s")")
+                    Text("\(personInteractions.count) interaction\(personInteractions.count == 1 ? "" : "s")")
                         .font(.caption)
                         .foregroundColor(.secondary)
 
@@ -189,7 +228,7 @@ struct PersonDetailView: View {
             .buttonStyle(.plain)
 
             if isTimelineExpanded {
-                if personTouchpoints.isEmpty {
+                if personInteractions.isEmpty {
                     ContentUnavailableView(
                         "No Interactions",
                         systemImage: "clock",
@@ -197,7 +236,7 @@ struct PersonDetailView: View {
                     )
                     .frame(height: 150)
                 } else {
-                    TimelineView(touchpoints: personTouchpoints)
+                    TimelineView(touchpoints: personInteractions)
                 }
             }
         }

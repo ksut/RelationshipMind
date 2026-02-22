@@ -6,18 +6,21 @@ struct HomeView: View {
     @Query(sort: \Touchpoint.occurredAt, order: .reverse) private var allTouchpoints: [Touchpoint]
     @Query(sort: \Person.firstName) private var allPeople: [Person]
     @State private var showingLogTouchpoint = false
+    @State private var showingAddNote = false
     @State private var showingSettings = false
     @AppStorage("needsAttentionDays") private var needsAttentionDays: Int = 30
 
-    // People with recent interactions, sorted by most recent
+    // People with recent interactions, sorted by most recent (excludes notes)
     var recentPeople: [(Person, Int, Date)] {
         var peopleWithStats: [(Person, Int, Date)] = []
 
         for person in allPeople {
-            let touchpoints = allTouchpoints.filter { $0.primaryPerson?.id == person.id }
-            if !touchpoints.isEmpty {
-                let count = touchpoints.count
-                let mostRecent = touchpoints.map { $0.occurredAt }.max() ?? Date.distantPast
+            let interactions = allTouchpoints.filter {
+                $0.primaryPerson?.id == person.id && $0.interactionType.countsAsInteraction
+            }
+            if !interactions.isEmpty {
+                let count = interactions.count
+                let mostRecent = interactions.map { $0.occurredAt }.max() ?? Date.distantPast
                 peopleWithStats.append((person, count, mostRecent))
             }
         }
@@ -25,8 +28,8 @@ struct HomeView: View {
         return peopleWithStats.sorted { $0.2 > $1.2 }
     }
 
-    /// People with at least 1 touchpoint whose most recent interaction is older than the threshold.
-    /// Sorted most stale first.
+    /// People with at least 1 interaction whose most recent interaction is older than the threshold.
+    /// Notes don't count — only real interactions. Sorted most stale first.
     var needsAttentionPeople: [(Person, Int)] {
         let threshold = Calendar.current.date(byAdding: .day, value: -needsAttentionDays, to: Date()) ?? Date()
 
@@ -67,6 +70,9 @@ struct HomeView: View {
             .sheet(isPresented: $showingLogTouchpoint) {
                 LogTouchpointView()
             }
+            .sheet(isPresented: $showingAddNote) {
+                LogTouchpointView(isNoteOnly: true)
+            }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
@@ -74,20 +80,38 @@ struct HomeView: View {
     }
 
     private var quickCaptureSection: some View {
-        Button {
-            showingLogTouchpoint = true
-        } label: {
-            HStack {
-                Image(systemName: "plus.circle.fill")
-                    .font(.title2)
-                Text("Log Interaction")
-                    .font(.headline)
+        HStack(spacing: 10) {
+            Button {
+                showingLogTouchpoint = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 18))
+                    Text("Interaction")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.accentColor)
+                .foregroundColor(.white)
+                .cornerRadius(12)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.accentColor)
-            .foregroundColor(.white)
-            .cornerRadius(12)
+
+            Button {
+                showingAddNote = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 18))
+                    Text("Note")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.orange)
+                .foregroundColor(.white)
+                .cornerRadius(12)
+            }
         }
     }
 

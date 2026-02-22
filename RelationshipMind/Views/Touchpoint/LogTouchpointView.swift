@@ -6,6 +6,7 @@ struct LogTouchpointView: View {
     @Environment(\.dismiss) private var dismiss
 
     var preselectedPerson: Person?
+    var isNoteOnly: Bool = false
 
     @State private var selectedPerson: Person?
     @State private var interactionType: InteractionType = .inPerson
@@ -78,7 +79,7 @@ struct LogTouchpointView: View {
     private var navigationTitle: String {
         switch currentStep {
         case .selectContact: return "Select Person"
-        case .writeNote: return "Log Interaction"
+        case .writeNote: return isNoteOnly ? "Add Note" : "Log Interaction"
         }
     }
 
@@ -111,18 +112,20 @@ struct LogTouchpointView: View {
                 }
             }
 
-            Section("Interaction Type") {
-                Picker("Type", selection: $interactionType) {
-                    ForEach(InteractionType.allCases, id: \.self) { type in
-                        Label(type.rawValue, systemImage: type.icon)
-                            .tag(type)
+            if !isNoteOnly {
+                Section("Interaction Type") {
+                    Picker("Type", selection: $interactionType) {
+                        ForEach(InteractionType.allCases.filter { $0.countsAsInteraction }, id: \.self) { type in
+                            Label(type.rawValue, systemImage: type.icon)
+                                .tag(type)
+                        }
                     }
+                    .pickerStyle(.menu)
                 }
-                .pickerStyle(.menu)
-            }
 
-            Section("When") {
-                DatePicker("Date", selection: $occurredAt, displayedComponents: [.date, .hourAndMinute])
+                Section("When") {
+                    DatePicker("Date", selection: $occurredAt, displayedComponents: [.date, .hourAndMinute])
+                }
             }
 
             Section {
@@ -175,7 +178,7 @@ struct LogTouchpointView: View {
                     }
                 }
             } header: {
-                Text("What happened?")
+                Text(isNoteOnly ? "What do you want to remember?" : "What happened?")
             }
 
             Section {
@@ -211,6 +214,7 @@ struct LogTouchpointView: View {
 
     private func toggleDictation() {
         if speechService.isRecording {
+            HapticService.lightImpact()
             speechService.stopRecording()
             // Append transcribed text to note
             if !speechService.transcribedText.isEmpty {
@@ -222,6 +226,7 @@ struct LogTouchpointView: View {
                 speechService.transcribedText = ""
             }
         } else {
+            HapticService.lightImpact()
             Task {
                 do {
                     speechService.transcribedText = ""
@@ -240,7 +245,7 @@ struct LogTouchpointView: View {
 
         let touchpoint = Touchpoint(
             rawNote: noteText.trimmingCharacters(in: .whitespacesAndNewlines),
-            interactionType: interactionType,
+            interactionType: isNoteOnly ? .note : interactionType,
             occurredAt: occurredAt,
             primaryPerson: person
         )
@@ -251,6 +256,7 @@ struct LogTouchpointView: View {
 
         do {
             try modelContext.save()
+            HapticService.success()
             print("Saved touchpoint: \(touchpoint.rawNote) for \(person.displayName)")
         } catch {
             print("Failed to save: \(error)")
@@ -296,6 +302,7 @@ struct LogTouchpointView: View {
                 touchpoint: touchpoint,
                 modelContext: modelContext
             )
+            HapticService.success()
             print("Extraction confirmed and saved")
         } catch {
             print("Failed to save extraction: \(error)")

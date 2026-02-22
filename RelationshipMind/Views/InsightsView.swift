@@ -7,27 +7,32 @@ struct InsightsView: View {
     @Query private var facts: [Fact]
     @AppStorage("needsAttentionDays") private var needsAttentionDays: Int = 30
 
+    /// Only real interactions (excludes notes)
+    var interactions: [Touchpoint] {
+        touchpoints.filter { $0.interactionType.countsAsInteraction }
+    }
+
     var totalInteractions: Int {
-        touchpoints.count
+        interactions.count
     }
 
     var activePeopleList: [Person] {
-        let activeIDs = Set(touchpoints.compactMap { $0.primaryPerson?.id })
+        let activeIDs = Set(interactions.compactMap { $0.primaryPerson?.id })
         return people.filter { activeIDs.contains($0.id) }
     }
 
     var recentTouchpoints: [Touchpoint] {
         let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
-        return touchpoints.filter { $0.occurredAt >= weekAgo }
+        return interactions.filter { $0.occurredAt >= weekAgo }
     }
 
     var needsAttentionList: [(Person, Int)] {
         let threshold = Calendar.current.date(byAdding: .day, value: -needsAttentionDays, to: Date()) ?? Date()
         var result: [(Person, Int)] = []
         for person in people {
-            let personTouchpoints = touchpoints.filter { $0.primaryPerson?.id == person.id }
-            if !personTouchpoints.isEmpty {
-                let mostRecent = personTouchpoints.map { $0.occurredAt }.max() ?? Date.distantPast
+            let personInteractions = interactions.filter { $0.primaryPerson?.id == person.id }
+            if !personInteractions.isEmpty {
+                let mostRecent = personInteractions.map { $0.occurredAt }.max() ?? Date.distantPast
                 if mostRecent < threshold {
                     let daysSince = Calendar.current.dateComponents([.day], from: mostRecent, to: Date()).day ?? 0
                     result.append((person, daysSince))
@@ -72,7 +77,7 @@ struct InsightsView: View {
                 NavigationLink {
                     InsightTouchpointList(
                         title: "All Interactions",
-                        touchpoints: touchpoints
+                        touchpoints: interactions
                     )
                 } label: {
                     StatCard(

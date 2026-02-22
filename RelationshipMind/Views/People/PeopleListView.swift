@@ -176,6 +176,7 @@ struct PeopleListView: View {
     }
 
     private func deletePeople(from sectionPeople: [Person], at offsets: IndexSet) {
+        HapticService.warning()
         for index in offsets {
             let person = sectionPeople[index]
             modelContext.delete(person)
@@ -191,6 +192,7 @@ struct PeopleListView: View {
             do {
                 let result = try await contactSyncService.syncContacts(modelContext: modelContext)
                 syncResult = result
+                HapticService.success()
                 showingSyncAlert = true
                 isSyncing = false
             } catch {

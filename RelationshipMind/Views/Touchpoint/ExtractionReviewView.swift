@@ -1,5 +1,10 @@
 import SwiftUI
 
+enum ConflictResolution: String, CaseIterable {
+    case update = "Update"
+    case keepExisting = "Keep Existing"
+}
+
 struct ExtractionResult {
     var summary: String
     var mentionedPeople: [MentionedPerson]
@@ -26,6 +31,8 @@ struct ExtractionResult {
         var timeProgression: TimeProgression?
         var confidence: Double
         var isConfirmed: Bool = true
+        var existingValue: String? = nil
+        var conflictResolution: ConflictResolution = .update
     }
 }
 
@@ -54,7 +61,11 @@ struct ExtractionReviewView: View {
                 if !extraction.facts.isEmpty {
                     Section("Extracted Facts") {
                         ForEach($extraction.facts) { $fact in
-                            ExtractedFactRow(fact: $fact)
+                            if fact.existingValue != nil {
+                                ConflictFactRow(fact: $fact)
+                            } else {
+                                ExtractedFactRow(fact: $fact)
+                            }
                         }
                     }
                 }
@@ -223,6 +234,81 @@ struct ExtractedFactRow: View {
     }
 }
 
+struct ConflictFactRow: View {
+    @Binding var fact: ExtractionResult.ExtractedFact
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: fact.category.icon)
+                    .foregroundColor(.orange)
+                    .font(.caption)
+                Text(fact.category.rawValue)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Spacer()
+
+                Text("Conflict")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.orange.opacity(0.2))
+                    .foregroundColor(.orange)
+                    .cornerRadius(4)
+            }
+
+            Text(fact.key)
+                .font(.subheadline)
+                .fontWeight(.medium)
+
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Current")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(fact.existingValue ?? "")
+                        .font(.callout)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Image(systemName: "arrow.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("New")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(fact.value)
+                        .font(.callout)
+                        .fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(8)
+            .background(Color(.systemGray6))
+            .cornerRadius(8)
+
+            Picker("Resolution", selection: $fact.conflictResolution) {
+                ForEach(ConflictResolution.allCases, id: \.self) { option in
+                    Text(option.rawValue).tag(option)
+                }
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: fact.conflictResolution) { _, _ in
+                HapticService.lightImpact()
+            }
+
+            Text("About: \(fact.personName)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
 #Preview {
     @Previewable @State var extraction = ExtractionResult(
         summary: "Had a productive meeting with John about his new role at Apple",
@@ -232,7 +318,8 @@ struct ExtractedFactRow: View {
         ],
         facts: [
             .init(personName: "John", category: .career, key: "company", value: "Apple", isTimeSensitive: false, confidence: 0.95),
-            .init(personName: "John", category: .career, key: "role", value: "Senior Engineer", isTimeSensitive: false, confidence: 0.85)
+            .init(personName: "John", category: .career, key: "role", value: "Senior Engineer", isTimeSensitive: false, confidence: 0.85),
+            .init(personName: "John", category: .career, key: "company", value: "Google", isTimeSensitive: false, confidence: 0.9, existingValue: "Microsoft")
         ]
     )
 

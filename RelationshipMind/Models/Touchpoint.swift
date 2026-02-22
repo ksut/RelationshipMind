@@ -10,6 +10,12 @@ enum InteractionType: String, Codable, CaseIterable {
     case email = "Email"
     case whatsapp = "WhatsApp"
     case other = "Other"
+    case note = "Note"
+
+    /// Whether this type counts as a real interaction for the "needs attention" timer.
+    var countsAsInteraction: Bool {
+        self != .note
+    }
 
     var icon: String {
         switch self {
@@ -21,6 +27,7 @@ enum InteractionType: String, Codable, CaseIterable {
         case .email: return "envelope.fill"
         case .whatsapp: return "bubble.left.and.text.bubble.right.fill"
         case .other: return "ellipsis.circle.fill"
+        case .note: return "note.text"
         }
     }
 }

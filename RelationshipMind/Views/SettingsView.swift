@@ -1,9 +1,11 @@
 import SwiftUI
+import LocalAuthentication
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("needsAttentionDays") private var needsAttentionDays: Int = 30
     @AppStorage("useWhatsApp") private var useWhatsApp: Bool = false
+    @AppStorage("biometricLockEnabled") private var biometricLockEnabled: Bool = false
     @State private var apiKey: String = ""
     @State private var showingAPIKey = false
     @State private var saveStatus: SaveStatus?
@@ -135,6 +137,23 @@ struct SettingsView: View {
                     .padding(.vertical, 4)
                 }
 
+                Section("Security") {
+                    Toggle(isOn: $biometricLockEnabled) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(biometricLabel)
+                            Text("Require authentication when opening the app")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                    .onChange(of: biometricLockEnabled) { _, newValue in
+                        if newValue {
+                            verifyBiometricCapability()
+                        }
+                    }
+                }
+
                 Section("About") {
                     LabeledContent("Version", value: "1.0")
                     LabeledContent("AI Model", value: "Claude Sonnet")
@@ -174,11 +193,31 @@ struct SettingsView: View {
         }
     }
 
+    private var biometricLabel: String {
+        let context = LAContext()
+        var error: NSError?
+        context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+        switch context.biometryType {
+        case .faceID: return "Face ID Lock"
+        case .touchID: return "Touch ID Lock"
+        default: return "Passcode Lock"
+        }
+    }
+
+    private func verifyBiometricCapability() {
+        let context = LAContext()
+        var error: NSError?
+        if !context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            biometricLockEnabled = false
+        }
+    }
+
     private func saveAPIKey() {
         let trimmedKey = apiKey.trimmingCharacters(in: .whitespaces)
         if KeychainHelper.save(trimmedKey, for: .claudeAPIKey) {
             saveStatus = .saved
             apiKey = ""
+            HapticService.success()
             // Auto-hide status after 2 seconds
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 saveStatus = nil

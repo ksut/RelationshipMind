@@ -95,6 +95,35 @@ final class ExtractionService {
                 ))
             }
 
+            // Detect conflicts with existing active facts
+            facts = facts.compactMap { fact in
+                let person = resolvePerson(
+                    name: fact.personName,
+                    primaryPerson: primaryPerson,
+                    mentionedPeople: mentionedPeople
+                )
+                guard let person else { return fact }
+
+                let existing = person.facts.first { f in
+                    !f.isSuperseded &&
+                    f.category == fact.category &&
+                    f.key.lowercased() == fact.key.lowercased()
+                }
+
+                guard let existing else { return fact }
+
+                // Same value → duplicate, drop it
+                if existing.value.lowercased() == fact.value.lowercased() {
+                    return nil
+                }
+
+                // Different value → flag as conflict
+                var conflictFact = fact
+                conflictFact.existingValue = existing.value
+                conflictFact.conflictResolution = .update
+                return conflictFact
+            }
+
             return ExtractionResult(
                 summary: response.summary,
                 mentionedPeople: mentionedPeople,
@@ -154,8 +183,8 @@ final class ExtractionService {
             }
         }
 
-        // Process confirmed facts
-        for factData in result.facts where factData.isConfirmed {
+        // Process confirmed facts (skip conflicts where user chose to keep existing)
+        for factData in result.facts where factData.isConfirmed && factData.conflictResolution != .keepExisting {
             // Resolve which person this fact belongs to
             let person = resolvePerson(
                 name: factData.personName,

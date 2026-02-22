@@ -34,6 +34,10 @@
 		A1000032260D0A000000001E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000033260D0A000000001F /* SettingsView.swift */; };
 		A1000034260D0A0000000020 /* SpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000035260D0A0000000021 /* SpeechService.swift */; };
 		A1000036260D0A0000000022 /* FuzzyMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000037260D0A0000000023 /* FuzzyMatcher.swift */; };
+		A1000039260D0A0000000025 /* HapticService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000038260D0A0000000024 /* HapticService.swift */; };
+		A100003B260D0A0000000027 /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100003A260D0A0000000026 /* LockScreenView.swift */; };
+		A100003D260D0A0000000029 /* AppIconPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100003C260D0A0000000028 /* AppIconPreview.swift */; };
+		A100003F260D0A000000002B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100003E260D0A000000002A /* OnboardingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -66,6 +70,10 @@
 		A1000033260D0A000000001F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A1000035260D0A0000000021 /* SpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechService.swift; sourceTree = "<group>"; };
 		A1000037260D0A0000000023 /* FuzzyMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyMatcher.swift; sourceTree = "<group>"; };
+		A1000038260D0A0000000024 /* HapticService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticService.swift; sourceTree = "<group>"; };
+		A100003A260D0A0000000026 /* LockScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenView.swift; sourceTree = "<group>"; };
+		A100003C260D0A0000000028 /* AppIconPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPreview.swift; sourceTree = "<group>"; };
+		A100003E260D0A000000002A /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +139,7 @@
 				A10000F7260D0A0000000107 /* People */,
 				A10000F8260D0A0000000108 /* Touchpoint */,
 				A10000F9260D0A0000000109 /* Shared */,
+				A10000FD260D0A000000010D /* Onboarding */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -171,8 +180,18 @@
 			isa = PBXGroup;
 			children = (
 				A1000024260D0A0000000012 /* PersonAvatarView.swift */,
+				A100003A260D0A0000000026 /* LockScreenView.swift */,
+				A100003C260D0A0000000028 /* AppIconPreview.swift */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		A10000FD260D0A000000010D /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				A100003E260D0A000000002A /* OnboardingView.swift */,
+			);
+			path = Onboarding;
 			sourceTree = "<group>";
 		};
 		A10000FA260D0A000000010A /* ViewModels */ = {
@@ -198,6 +217,7 @@
 			children = (
 				A100002D260D0A0000000019 /* KeychainHelper.swift */,
 				A1000037260D0A0000000023 /* FuzzyMatcher.swift */,
+				A1000038260D0A0000000024 /* HapticService.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -297,6 +317,10 @@
 				A1000032260D0A000000001E /* SettingsView.swift in Sources */,
 				A1000034260D0A0000000020 /* SpeechService.swift in Sources */,
 				A1000036260D0A0000000022 /* FuzzyMatcher.swift in Sources */,
+				A1000039260D0A0000000025 /* HapticService.swift in Sources */,
+				A100003B260D0A0000000027 /* LockScreenView.swift in Sources */,
+				A100003D260D0A0000000029 /* AppIconPreview.swift in Sources */,
+				A100003F260D0A000000002B /* OnboardingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
