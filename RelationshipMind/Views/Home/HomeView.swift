@@ -10,11 +10,11 @@ struct HomeView: View {
     @State private var showingSettings = false
     @AppStorage("needsAttentionDays") private var needsAttentionDays: Int = 30
 
-    // People with recent interactions, sorted by most recent (excludes notes)
+    // People with recent interactions, sorted by most recent (excludes notes, only tracked)
     var recentPeople: [(Person, Int, Date)] {
         var peopleWithStats: [(Person, Int, Date)] = []
 
-        for person in allPeople {
+        for person in allPeople where person.isTracked {
             let interactions = allTouchpoints.filter {
                 $0.primaryPerson?.id == person.id && $0.interactionType.countsAsInteraction
             }

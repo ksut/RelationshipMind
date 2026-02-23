@@ -7,9 +7,17 @@ struct InsightsView: View {
     @Query private var facts: [Fact]
     @AppStorage("needsAttentionDays") private var needsAttentionDays: Int = 30
 
-    /// Only real interactions (excludes notes)
+    var trackedPeople: [Person] {
+        people.filter { $0.isTracked }
+    }
+
+    /// Only real interactions (excludes notes), only for tracked people
     var interactions: [Touchpoint] {
-        touchpoints.filter { $0.interactionType.countsAsInteraction }
+        let trackedIDs = Set(trackedPeople.map { $0.id })
+        return touchpoints.filter {
+            $0.interactionType.countsAsInteraction &&
+            ($0.primaryPerson.map { trackedIDs.contains($0.id) } ?? false)
+        }
     }
 
     var totalInteractions: Int {
@@ -18,7 +26,7 @@ struct InsightsView: View {
 
     var activePeopleList: [Person] {
         let activeIDs = Set(interactions.compactMap { $0.primaryPerson?.id })
-        return people.filter { activeIDs.contains($0.id) }
+        return trackedPeople.filter { activeIDs.contains($0.id) }
     }
 
     var recentTouchpoints: [Touchpoint] {
@@ -29,7 +37,7 @@ struct InsightsView: View {
     var needsAttentionList: [(Person, Int)] {
         let threshold = Calendar.current.date(byAdding: .day, value: -needsAttentionDays, to: Date()) ?? Date()
         var result: [(Person, Int)] = []
-        for person in people {
+        for person in trackedPeople {
             let personInteractions = interactions.filter { $0.primaryPerson?.id == person.id }
             if !personInteractions.isEmpty {
                 let mostRecent = personInteractions.map { $0.occurredAt }.max() ?? Date.distantPast
@@ -43,7 +51,8 @@ struct InsightsView: View {
     }
 
     var activeFacts: [Fact] {
-        facts.filter { !$0.isSuperseded }
+        let trackedIDs = Set(trackedPeople.map { $0.id })
+        return facts.filter { !$0.isSuperseded && ($0.person.map { trackedIDs.contains($0.id) } ?? false) }
     }
 
     var body: some View {
@@ -63,11 +72,11 @@ struct InsightsView: View {
         VStack(spacing: 16) {
             HStack(spacing: 16) {
                 NavigationLink {
-                    InsightPeopleList(people: people)
+                    InsightPeopleList(people: trackedPeople)
                 } label: {
                     StatCard(
-                        title: "People",
-                        value: "\(people.count)",
+                        title: "Tracked",
+                        value: "\(trackedPeople.count)",
                         icon: "person.2.fill",
                         color: .blue
                     )

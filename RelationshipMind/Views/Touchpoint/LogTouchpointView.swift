@@ -250,6 +250,11 @@ struct LogTouchpointView: View {
             primaryPerson: person
         )
 
+        // Auto-track person when logging an interaction
+        if !person.isTracked {
+            person.isTracked = true
+        }
+
         // Insert and explicitly add to person's touchpoints
         modelContext.insert(touchpoint)
         person.touchpoints.append(touchpoint)

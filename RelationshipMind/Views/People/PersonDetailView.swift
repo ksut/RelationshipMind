@@ -83,6 +83,24 @@ struct PersonDetailView: View {
                         .lineLimit(1)
                 }
             }
+
+            Button {
+                person.isTracked.toggle()
+                HapticService.selection()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: person.isTracked ? "eye.fill" : "eye.slash")
+                        .font(.system(size: 14))
+                    Text(person.isTracked ? "Tracking" : "Not Tracked")
+                        .font(.system(size: 14, weight: .medium))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(person.isTracked ? Color.accentColor.opacity(0.15) : Color(.systemGray5))
+                .foregroundColor(person.isTracked ? .accentColor : .secondary)
+                .cornerRadius(20)
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -182,6 +200,9 @@ struct PersonDetailView: View {
     }
 
     private func logQuickTouchpoint(type: InteractionType, note: String) {
+        if !person.isTracked {
+            person.isTracked = true
+        }
         let touchpoint = Touchpoint(
             rawNote: note,
             summary: note,

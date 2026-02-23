@@ -16,6 +16,7 @@ final class Person {
     @Attribute(.externalStorage) var photoData: Data?
     var source: PersonSource
     var contactIdentifier: String?  // Apple CNContact identifier for sync
+    var isTracked: Bool = false
     var createdAt: Date
     var updatedAt: Date
 
@@ -59,6 +60,7 @@ final class Person {
         photoData: Data? = nil,
         source: PersonSource = .appLocal,
         contactIdentifier: String? = nil,
+        isTracked: Bool = false,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -70,6 +72,7 @@ final class Person {
         self.photoData = photoData
         self.source = source
         self.contactIdentifier = contactIdentifier
+        self.isTracked = isTracked
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

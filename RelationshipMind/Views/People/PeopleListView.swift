@@ -17,6 +17,7 @@ struct PeopleListView: View {
 
     enum PersonFilter: String, CaseIterable {
         case all = "All"
+        case tracked = "Tracked"
         case phoneContacts = "Contacts"
         case appLocal = "App Only"
     }
@@ -28,6 +29,8 @@ struct PeopleListView: View {
         switch selectedFilter {
         case .all:
             break
+        case .tracked:
+            result = result.filter { $0.isTracked }
         case .phoneContacts:
             result = result.filter { $0.source == .phoneContact }
         case .appLocal:
@@ -153,6 +156,17 @@ struct PeopleListView: View {
                             } label: {
                                 PersonRowView(person: person)
                             }
+                            .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                Button {
+                                    toggleTracking(person)
+                                } label: {
+                                    Label(
+                                        person.isTracked ? "Untrack" : "Track",
+                                        systemImage: person.isTracked ? "eye.slash" : "eye"
+                                    )
+                                }
+                                .tint(person.isTracked ? .gray : .blue)
+                            }
                         }
                         .onDelete { indexSet in
                             deletePeople(from: section.1, at: indexSet)
@@ -164,15 +178,26 @@ struct PeopleListView: View {
         }
     }
 
+    var trackedCount: Int {
+        people.filter { $0.isTracked }.count
+    }
+
     private func filterLabel(for filter: PersonFilter) -> String {
         switch filter {
         case .all:
             return "All (\(people.count))"
+        case .tracked:
+            return "Tracked (\(trackedCount))"
         case .phoneContacts:
             return "Contacts (\(phoneContactCount))"
         case .appLocal:
             return "App (\(people.count - phoneContactCount))"
         }
+    }
+
+    private func toggleTracking(_ person: Person) {
+        person.isTracked.toggle()
+        HapticService.selection()
     }
 
     private func deletePeople(from sectionPeople: [Person], at offsets: IndexSet) {
@@ -235,6 +260,12 @@ struct PersonRowView: View {
             }
 
             Spacer()
+
+            if person.isTracked {
+                Image(systemName: "eye.fill")
+                    .font(.caption)
+                    .foregroundColor(.accentColor)
+            }
         }
         .padding(.vertical, 4)
     }
