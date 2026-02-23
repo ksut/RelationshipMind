@@ -8,6 +8,7 @@ struct HomeView: View {
     @State private var showingLogTouchpoint = false
     @State private var showingAddNote = false
     @State private var showingSettings = false
+    @State private var isRecentExpanded = false
     @State private var isNeverContactedExpanded = false
     @State private var isOverOneYearExpanded = false
     @State private var isOverSixMonthsExpanded = false
@@ -145,26 +146,73 @@ struct HomeView: View {
     }
 
     private var recentTouchpointsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Recent")
-                .font(.headline)
-                .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isRecentExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "clock.fill")
+                        .foregroundColor(.green)
+                        .font(.subheadline)
+                    Text("Recent")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text("\(recentPeople.count)")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(.green)
+                        .cornerRadius(12)
+                    Image(systemName: isRecentExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(12)
+                .background(Color(.systemBackground))
+                .cornerRadius(12)
+                .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+            }
+            .buttonStyle(.plain)
 
-            if recentPeople.isEmpty {
-                ContentUnavailableView(
-                    "No Interactions Yet",
-                    systemImage: "bubble.left.and.bubble.right",
-                    description: Text("Tap the button above to log your first interaction")
-                )
-                .frame(height: 200)
-            } else {
-                ForEach(recentPeople.prefix(10), id: \.0.id) { person, count, _ in
-                    NavigationLink {
-                        PersonDetailView(person: person)
-                    } label: {
-                        RecentPersonCard(person: person, touchpointCount: count)
+            if isRecentExpanded {
+                if recentPeople.isEmpty {
+                    ContentUnavailableView(
+                        "No Interactions Yet",
+                        systemImage: "bubble.left.and.bubble.right",
+                        description: Text("Tap the button above to log your first interaction")
+                    )
+                    .frame(height: 200)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 8) {
+                            ForEach(recentPeople, id: \.0.id) { person, count, _ in
+                                NavigationLink {
+                                    PersonDetailView(person: person)
+                                } label: {
+                                    RecentPersonCard(person: person, touchpointCount: count)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.top, 10)
                     }
-                    .buttonStyle(.plain)
+                    .frame(maxHeight: 320)
+                    .mask(
+                        VStack(spacing: 0) {
+                            Color.black
+                            LinearGradient(
+                                colors: [.black, .black.opacity(0)],
+                                startPoint: .init(x: 0.5, y: 0.7),
+                                endPoint: .bottom
+                            )
+                            .frame(height: 30)
+                        }
+                    )
                 }
             }
         }
