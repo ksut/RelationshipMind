@@ -8,13 +8,16 @@ struct HomeView: View {
     @State private var showingLogTouchpoint = false
     @State private var showingAddNote = false
     @State private var showingSettings = false
-    @AppStorage("needsAttentionDays") private var needsAttentionDays: Int = 30
+
+    var trackedPeople: [Person] {
+        allPeople.filter { $0.isTracked }
+    }
 
     // People with recent interactions, sorted by most recent (excludes notes, only tracked)
     var recentPeople: [(Person, Int, Date)] {
         var peopleWithStats: [(Person, Int, Date)] = []
 
-        for person in allPeople where person.isTracked {
+        for person in trackedPeople {
             let interactions = allTouchpoints.filter {
                 $0.primaryPerson?.id == person.id && $0.interactionType.countsAsInteraction
             }
@@ -28,18 +31,41 @@ struct HomeView: View {
         return peopleWithStats.sorted { $0.2 > $1.2 }
     }
 
-    /// People with at least 1 interaction whose most recent interaction is older than the threshold.
-    /// Notes don't count — only real interactions. Sorted most stale first.
-    var needsAttentionPeople: [(Person, Int)] {
-        let threshold = Calendar.current.date(byAdding: .day, value: -needsAttentionDays, to: Date()) ?? Date()
+    /// Tracked people with zero real interactions
+    var neverContactedPeople: [Person] {
+        let contactedIDs = Set(recentPeople.map { $0.0.id })
+        return trackedPeople
+            .filter { !contactedIDs.contains($0.id) }
+            .sorted { $0.firstName < $1.firstName }
+    }
 
+    /// Tracked people whose last real interaction was over 1 year ago
+    var overOneYearPeople: [(Person, Int)] {
+        let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: Date()) ?? Date()
         return recentPeople
-            .filter { $0.2 < threshold }
+            .filter { $0.2 < oneYearAgo }
             .map { person, _, lastDate in
-                let daysSince = Calendar.current.dateComponents([.day], from: lastDate, to: Date()).day ?? 0
-                return (person, daysSince)
+                let days = Calendar.current.dateComponents([.day], from: lastDate, to: Date()).day ?? 0
+                return (person, days)
             }
             .sorted { $0.1 > $1.1 }
+    }
+
+    /// Tracked people whose last real interaction was between 6 months and 1 year ago
+    var overSixMonthsPeople: [(Person, Int)] {
+        let sixMonthsAgo = Calendar.current.date(byAdding: .month, value: -6, to: Date()) ?? Date()
+        let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: Date()) ?? Date()
+        return recentPeople
+            .filter { $0.2 < sixMonthsAgo && $0.2 >= oneYearAgo }
+            .map { person, _, lastDate in
+                let days = Calendar.current.dateComponents([.day], from: lastDate, to: Date()).day ?? 0
+                return (person, days)
+            }
+            .sorted { $0.1 > $1.1 }
+    }
+
+    var hasAnyAttentionItems: Bool {
+        !neverContactedPeople.isEmpty || !overOneYearPeople.isEmpty || !overSixMonthsPeople.isEmpty
     }
 
     var body: some View {
@@ -52,8 +78,8 @@ struct HomeView: View {
                     // Recent Touchpoints
                     recentTouchpointsSection
 
-                    // Needs Attention
-                    needsAttentionSection
+                    // Attention groups
+                    attentionSection
                 }
                 .padding()
             }
@@ -141,63 +167,119 @@ struct HomeView: View {
         }
     }
 
-    private var needsAttentionSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Needs Attention")
+    private var attentionSection: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            if !hasAnyAttentionItems {
+                allCaughtUpView
+            } else {
+                if !neverContactedPeople.isEmpty {
+                    attentionGroup(
+                        title: "Never Connected",
+                        icon: "person.fill.questionmark",
+                        color: .red,
+                        count: neverContactedPeople.count
+                    ) {
+                        ForEach(neverContactedPeople.prefix(5)) { person in
+                            NavigationLink {
+                                PersonDetailView(person: person)
+                            } label: {
+                                AttentionCard(person: person, subtitle: "No interactions yet", color: .red)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
+                if !overOneYearPeople.isEmpty {
+                    attentionGroup(
+                        title: "Over 1 Year",
+                        icon: "exclamationmark.triangle.fill",
+                        color: .orange,
+                        count: overOneYearPeople.count
+                    ) {
+                        ForEach(overOneYearPeople.prefix(5), id: \.0.id) { person, days in
+                            NavigationLink {
+                                PersonDetailView(person: person)
+                            } label: {
+                                AttentionCard(person: person, subtitle: "\(days) days ago", color: .orange)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
+                if !overSixMonthsPeople.isEmpty {
+                    attentionGroup(
+                        title: "Over 6 Months",
+                        icon: "clock.badge.exclamationmark",
+                        color: .yellow,
+                        count: overSixMonthsPeople.count
+                    ) {
+                        ForEach(overSixMonthsPeople.prefix(5), id: \.0.id) { person, days in
+                            NavigationLink {
+                                PersonDetailView(person: person)
+                            } label: {
+                                AttentionCard(person: person, subtitle: "\(days) days ago", color: .yellow)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func attentionGroup<Content: View>(
+        title: String,
+        icon: String,
+        color: Color,
+        count: Int,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundColor(color)
+                    .font(.subheadline)
+                Text(title)
                     .font(.headline)
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("\(needsAttentionDays)+ days")
+                Text("\(count)")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .fontWeight(.medium)
+                    .foregroundColor(color)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color(.systemGray5))
+                    .background(color.opacity(0.15))
                     .cornerRadius(8)
             }
 
-            if needsAttentionPeople.isEmpty {
-                HStack {
-                    Spacer()
-                    VStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.largeTitle)
-                            .foregroundColor(.green)
-                        Text("All Caught Up")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 24)
-                    Spacer()
-                }
-            } else {
-                ForEach(needsAttentionPeople.prefix(5), id: \.0.id) { person, daysSince in
-                    NavigationLink {
-                        PersonDetailView(person: person)
-                    } label: {
-                        NeedsAttentionCard(person: person, daysSince: daysSince)
-                    }
-                    .buttonStyle(.plain)
-                }
+            content()
+        }
+    }
+
+    private var allCaughtUpView: some View {
+        HStack {
+            Spacer()
+            VStack(spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.largeTitle)
+                    .foregroundColor(.green)
+                Text("All Caught Up")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
+            .padding(.vertical, 24)
+            Spacer()
         }
     }
 }
 
-struct NeedsAttentionCard: View {
+struct AttentionCard: View {
     let person: Person
-    let daysSince: Int
-
-    private var urgencyColor: Color {
-        if daysSince > 90 {
-            return .red
-        } else if daysSince > 60 {
-            return .orange
-        } else {
-            return .yellow
-        }
-    }
+    let subtitle: String
+    let color: Color
 
     var body: some View {
         HStack(spacing: 12) {
@@ -208,7 +290,7 @@ struct NeedsAttentionCard: View {
                     .font(.headline)
                     .foregroundColor(.primary)
 
-                Text("\(daysSince) days since last contact")
+                Text(subtitle)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -216,7 +298,7 @@ struct NeedsAttentionCard: View {
             Spacer()
 
             Circle()
-                .fill(urgencyColor)
+                .fill(color)
                 .frame(width: 10, height: 10)
 
             Image(systemName: "chevron.right")
