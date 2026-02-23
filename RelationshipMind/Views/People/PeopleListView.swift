@@ -8,6 +8,10 @@ struct PeopleListView: View {
     @State private var selectedFilter: PersonFilter = .all
     @State private var showingAddPerson = false
 
+    // Multi-select state
+    @State private var isSelecting = false
+    @State private var selectedIDs: Set<UUID> = []
+
     // Sync state
     @State private var contactSyncService = ContactSyncService()
     @State private var isSyncing = false
@@ -73,23 +77,32 @@ struct PeopleListView: View {
             .searchable(text: $searchText, prompt: "Search people")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        syncContacts()
-                    } label: {
-                        if isSyncing {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        } else {
-                            Image(systemName: "arrow.triangle.2.circlepath")
+                    if isSelecting {
+                        Button("Done") {
+                            exitSelectionMode()
                         }
+                        .fontWeight(.semibold)
+                    } else {
+                        Button {
+                            syncContacts()
+                        } label: {
+                            if isSyncing {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            } else {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                            }
+                        }
+                        .disabled(isSyncing)
                     }
-                    .disabled(isSyncing)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingAddPerson = true
-                    } label: {
-                        Image(systemName: "plus")
+                    if !isSelecting {
+                        Button {
+                            showingAddPerson = true
+                        } label: {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
             }
@@ -151,30 +164,96 @@ struct PeopleListView: View {
                 ForEach(groupedPeople, id: \.0) { section in
                     Section(section.0) {
                         ForEach(section.1) { person in
-                            NavigationLink {
-                                PersonDetailView(person: person)
-                            } label: {
-                                PersonRowView(person: person)
-                            }
-                            .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            if isSelecting {
                                 Button {
-                                    toggleTracking(person)
+                                    toggleSelection(person)
                                 } label: {
-                                    Label(
-                                        person.isTracked ? "Untrack" : "Track",
-                                        systemImage: person.isTracked ? "eye.slash" : "eye"
-                                    )
+                                    HStack(spacing: 12) {
+                                        Image(systemName: selectedIDs.contains(person.id) ? "checkmark.circle.fill" : "circle")
+                                            .font(.title3)
+                                            .foregroundColor(selectedIDs.contains(person.id) ? .accentColor : .secondary)
+                                        PersonRowView(person: person)
+                                    }
                                 }
-                                .tint(person.isTracked ? .gray : .blue)
+                                .buttonStyle(.plain)
+                            } else {
+                                NavigationLink {
+                                    PersonDetailView(person: person)
+                                } label: {
+                                    PersonRowView(person: person)
+                                }
+                                .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                    Button {
+                                        toggleTracking(person)
+                                    } label: {
+                                        Label(
+                                            person.isTracked ? "Untrack" : "Track",
+                                            systemImage: person.isTracked ? "eye.slash" : "eye"
+                                        )
+                                    }
+                                    .tint(person.isTracked ? .gray : .blue)
+                                }
+                                .onLongPressGesture {
+                                    enterSelectionMode(startingWith: person)
+                                }
                             }
                         }
                         .onDelete { indexSet in
-                            deletePeople(from: section.1, at: indexSet)
+                            if !isSelecting {
+                                deletePeople(from: section.1, at: indexSet)
+                            }
                         }
                     }
                 }
             }
             .listStyle(.insetGrouped)
+
+            // Bulk action bar
+            if isSelecting {
+                bulkActionBar
+            }
+        }
+    }
+
+    private var bulkActionBar: some View {
+        VStack(spacing: 0) {
+            Divider()
+            HStack(spacing: 16) {
+                Button {
+                    selectAll()
+                } label: {
+                    Text(selectedIDs.count == filteredPeople.count ? "Deselect All" : "Select All")
+                        .font(.subheadline)
+                }
+
+                Spacer()
+
+                Text("\(selectedIDs.count) selected")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Spacer()
+
+                Button {
+                    trackSelected()
+                } label: {
+                    Text("Track")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                }
+                .disabled(selectedIDs.isEmpty)
+
+                Button {
+                    untrackSelected()
+                } label: {
+                    Text("Untrack")
+                        .font(.subheadline)
+                }
+                .disabled(selectedIDs.isEmpty)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(Color(.systemBackground))
         }
     }
 
@@ -198,6 +277,51 @@ struct PeopleListView: View {
     private func toggleTracking(_ person: Person) {
         person.isTracked.toggle()
         HapticService.selection()
+    }
+
+    private func enterSelectionMode(startingWith person: Person) {
+        HapticService.mediumImpact()
+        selectedIDs = [person.id]
+        isSelecting = true
+    }
+
+    private func exitSelectionMode() {
+        isSelecting = false
+        selectedIDs.removeAll()
+    }
+
+    private func toggleSelection(_ person: Person) {
+        HapticService.lightImpact()
+        if selectedIDs.contains(person.id) {
+            selectedIDs.remove(person.id)
+        } else {
+            selectedIDs.insert(person.id)
+        }
+    }
+
+    private func selectAll() {
+        if selectedIDs.count == filteredPeople.count {
+            selectedIDs.removeAll()
+        } else {
+            selectedIDs = Set(filteredPeople.map { $0.id })
+        }
+        HapticService.lightImpact()
+    }
+
+    private func trackSelected() {
+        for person in people where selectedIDs.contains(person.id) {
+            person.isTracked = true
+        }
+        HapticService.success()
+        exitSelectionMode()
+    }
+
+    private func untrackSelected() {
+        for person in people where selectedIDs.contains(person.id) {
+            person.isTracked = false
+        }
+        HapticService.success()
+        exitSelectionMode()
     }
 
     private func deletePeople(from sectionPeople: [Person], at offsets: IndexSet) {
