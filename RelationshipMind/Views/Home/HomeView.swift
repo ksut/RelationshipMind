@@ -8,6 +8,9 @@ struct HomeView: View {
     @State private var showingLogTouchpoint = false
     @State private var showingAddNote = false
     @State private var showingSettings = false
+    @State private var isNeverContactedExpanded = false
+    @State private var isOverOneYearExpanded = false
+    @State private var isOverSixMonthsExpanded = false
 
     var trackedPeople: [Person] {
         allPeople.filter { $0.isTracked }
@@ -177,9 +180,10 @@ struct HomeView: View {
                         title: "Never Connected",
                         icon: "person.fill.questionmark",
                         color: .red,
-                        count: neverContactedPeople.count
+                        count: neverContactedPeople.count,
+                        isExpanded: $isNeverContactedExpanded
                     ) {
-                        ForEach(neverContactedPeople.prefix(5)) { person in
+                        ForEach(neverContactedPeople) { person in
                             NavigationLink {
                                 PersonDetailView(person: person)
                             } label: {
@@ -195,9 +199,10 @@ struct HomeView: View {
                         title: "Over 1 Year",
                         icon: "exclamationmark.triangle.fill",
                         color: .orange,
-                        count: overOneYearPeople.count
+                        count: overOneYearPeople.count,
+                        isExpanded: $isOverOneYearExpanded
                     ) {
-                        ForEach(overOneYearPeople.prefix(5), id: \.0.id) { person, days in
+                        ForEach(overOneYearPeople, id: \.0.id) { person, days in
                             NavigationLink {
                                 PersonDetailView(person: person)
                             } label: {
@@ -213,9 +218,10 @@ struct HomeView: View {
                         title: "Over 6 Months",
                         icon: "clock.badge.exclamationmark",
                         color: .yellow,
-                        count: overSixMonthsPeople.count
+                        count: overSixMonthsPeople.count,
+                        isExpanded: $isOverSixMonthsExpanded
                     ) {
-                        ForEach(overSixMonthsPeople.prefix(5), id: \.0.id) { person, days in
+                        ForEach(overSixMonthsPeople, id: \.0.id) { person, days in
                             NavigationLink {
                                 PersonDetailView(person: person)
                             } label: {
@@ -234,28 +240,62 @@ struct HomeView: View {
         icon: String,
         color: Color,
         count: Int,
+        isExpanded: Binding<Bool>,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .foregroundColor(color)
-                    .font(.subheadline)
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-                Spacer()
-                Text("\(count)")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(color)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(color.opacity(0.15))
-                    .cornerRadius(8)
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.wrappedValue.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: icon)
+                        .foregroundColor(color)
+                        .font(.subheadline)
+                    Text(title)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text("\(count)")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(color)
+                        .cornerRadius(12)
+                    Image(systemName: isExpanded.wrappedValue ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(12)
+                .background(Color(.systemBackground))
+                .cornerRadius(12)
+                .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
             }
+            .buttonStyle(.plain)
 
-            content()
+            if isExpanded.wrappedValue {
+                ScrollView {
+                    VStack(spacing: 8) {
+                        content()
+                    }
+                    .padding(.top, 10)
+                }
+                .frame(maxHeight: 320)
+                .mask(
+                    VStack(spacing: 0) {
+                        Color.black
+                        LinearGradient(
+                            colors: [.black, .black.opacity(0)],
+                            startPoint: .init(x: 0.5, y: 0.7),
+                            endPoint: .bottom
+                        )
+                        .frame(height: 30)
+                    }
+                )
+            }
         }
     }
 
